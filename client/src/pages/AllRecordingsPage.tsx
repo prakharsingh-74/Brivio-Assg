@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { RecordingCard } from '../components/RecordingCard/RecordingCard';
 import { RecordingSkeleton } from '../components/RecordingCard/RecordingSkeleton';
 import { useRecordings } from '../hooks/useRecordings';

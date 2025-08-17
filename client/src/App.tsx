@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './hooks/useAuth';
 import { AppLayout } from './components/Layout/AppLayout';
 import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
 import { AllRecordingsPage } from './pages/AllRecordingsPage';
 import { NewRecordingPage } from './pages/NewRecordingPage';
 
@@ -13,6 +14,7 @@ function App() {
         <div className="h-screen">
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
             <Route path="/app" element={<AppLayout />}>
               <Route path="recordings" element={<AllRecordingsPage />} />
               <Route path="new" element={<NewRecordingPage />} />

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { HiMicrophone, HiArrowUpTray } from 'react-icons/hi2';
 
@@ -16,29 +15,29 @@ export function Sidebar() {
       </div>
       
       <nav className="flex-1 px-4 space-y-2">
-        <Link
-          to="/app/recordings"
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            isActive('/app/recordings')
-              ? 'bg-blue-50 text-blue-700'
-              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-          }`}
-        >
-          <HiMicrophone className="w-5 h-5" />
-          All Recordings
-        </Link>
-        
-        <Link
-          to="/app/new"
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-            isActive('/app/new')
-              ? 'bg-blue-600 text-white'
-              : 'text-white bg-blue-600 hover:bg-blue-700'
-          }`}
-        >
-          <HiArrowUpTray className="w-5 h-5" />
-          New Recording
-        </Link>
+          <Link
+            to="/app/recordings"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors justify-start ${
+              isActive('/app/recordings')
+                ? 'bg-blue-500 text-white'
+                : 'text-black bg-white hover:bg-blue-100'
+            }`}
+          >
+            <HiMicrophone className="w-5 h-5" />
+            All Recordings
+          </Link>
+
+          <Link
+            to="/app/new"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors justify-start ${
+              isActive('/app/new')
+                ? 'bg-blue-500 text-white'
+                : 'text-black bg-white hover:bg-blue-100'
+            }`}
+          >
+            <HiArrowUpTray className="w-5 h-5" />
+            New Recording
+          </Link>
       </nav>
     </div>
   );

@@ -1,6 +1,6 @@
 import { Recording, Paginated, LoginResponse, UploadResponse, StatusResponse } from '../../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 class ApiClient {
   private token: string | null = null;
@@ -13,42 +13,31 @@ class ApiClient {
     this.token = null;
   }
 
-  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...((options?.headers as Record<string, string>) || {}),
-    };
-
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
-    }
-
-    // Remove Content-Type for FormData requests
-    if (options?.body instanceof FormData) {
-      delete headers['Content-Type'];
-    }
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
-  }
 
   async login(email: string, password: string): Promise<LoginResponse> {
-    // Mock login with delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (email === 'user@example.com' && password === 'password') {
-      return { token: 'mock-jwt-token-12345' };
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || 'Login failed');
     }
-    
-    throw new Error('Invalid credentials');
+    return res.json();
+  }
+
+  async signup(email: string, password: string, confirmpassword: string): Promise<{ message: string }> {
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, confirmpassword })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || 'Signup failed');
+    }
+    return res.json();
   }
 
   async getRecordings(limit = 20, cursor?: string): Promise<Paginated<Recording>> {

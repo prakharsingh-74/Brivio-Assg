@@ -1,4 +1,3 @@
-import React from 'react';
 import { Recording } from '../../types';
 import { formatDuration, formatRelativeTime } from '../../lib/utils';
 
