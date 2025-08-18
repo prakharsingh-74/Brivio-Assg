@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { Spinner } from '../components/Spinner';
+import { apiClient } from '../lib/api/client';
 import { RecordingCard } from '../components/RecordingCard/RecordingCard';
 import { RecordingSkeleton } from '../components/RecordingCard/RecordingSkeleton';
 import { useRecordings } from '../hooks/useRecordings';
@@ -32,12 +34,31 @@ export function AllRecordingsPage() {
     };
   }, [hasMore, isLoading, loadMore]);
 
-  // Auto-select first recording
+
+  // Auto-select first recording and fetch details
   useEffect(() => {
+    const fetchDetails = async (rec: Recording) => {
+      try {
+        const details = await apiClient.getRecordingDetails(rec.id);
+        setSelectedRecording(details);
+      } catch {
+        setSelectedRecording(rec);
+      }
+    };
     if (recordings.length > 0 && !selectedRecording) {
-      setSelectedRecording(recordings[0]);
+      fetchDetails(recordings[0]);
     }
   }, [recordings, selectedRecording]);
+
+  // Fetch details when a new recording is selected
+  const handleSelectRecording = async (rec: Recording) => {
+    try {
+      const details = await apiClient.getRecordingDetails(rec.id);
+      setSelectedRecording(details);
+    } catch {
+      setSelectedRecording(rec);
+    }
+  };
 
   if (error) {
     return (
@@ -55,7 +76,15 @@ export function AllRecordingsPage() {
     );
   }
 
-  if (recordings.length === 0 && !isLoading) {
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (recordings.length === 0) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center text-gray-500">
@@ -80,7 +109,7 @@ export function AllRecordingsPage() {
               key={recording.id}
               recording={recording}
               isSelected={selectedRecording?.id === recording.id}
-              onClick={() => setSelectedRecording(recording)}
+              onClick={() => handleSelectRecording(recording)}
             />
           ))}
           
@@ -131,28 +160,15 @@ export function AllRecordingsPage() {
 
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-500 mb-2">Original Transcription</label>
-                  <div className="text-sm text-gray-700 leading-relaxed">
-                    <p className="mb-4">
-                      Fugiat ipsum consequat aliquam ultrices lacus. Tellus lorem ipsum dolor sit amet, consectetur elit. Fugiat vel bibendum. Fusce vitae dolor lorem. Fusce vitae rutrum mi. Fusce vitae rutrum leo. Team tellus vitae porta lorem ipsum dolor sit amet, consectetur elit, sed do eiusmod tempor ut labore incididunt lorem nulla fugiat nulla pariatur et eusmod sunt in dolore magna aliqua. Tellus lorem ipsum dolor sit amet, consectetur elit, et eusmod sunt in dolore.
-                    </p>
-                    <p className="mb-4">
-                      Tha fugit in duis hendrerit in excepteur consequat sunt incididunt ut labore et dolore magna aliqua et ultrices. Nulla fugiat nulla pariatur et eusmod sed eiusmod tempor incididunt ut labore et dolore magna aliqua. Tellus lorem ipsum dolor sit amet, consectetur elit. Sed duis hendrerit in ex eu irlure dolor in proident sunt in dolore magna aliqua, ut enim ad minim veniam, quis nostrud exercitation ultrices. Hendrerit dolor lorem ipsum dolor sit amet, consectetur elit adipiscing. Nulla fugiat nulla pariatur et eusmod sunt in dolore magna aliqua. Tellus lorem ipsum dolor sit amet, et eusmod sunt in dolore magna aliqua. Team tellus vitae porta lorem ipsum dolor sit amet, consectetur elit.
-                    </p>
+                  <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                    {selectedRecording.transcription || <span className="italic text-gray-400">No transcription available.</span>}
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-2">AI Summary</label>
-                  <div className="text-sm text-gray-700 leading-relaxed">
-                    <p className="mb-4">
-                      Fugiat ipsum consequat aliquam ultrices lacus. Tellus lorem vitae tellus vitae lacus. Team tellus vitae porta lorem ipsum dolor sit amet, consectetur elit adipiscing. Fusce vitae rutrum leo. Team tellus vitae porta lorem ipsum dolor sit amet, consectetur elit.
-                    </p>
-                    <p className="mb-4">
-                      Tha rutrum tellus vitae tellus vitae lacus. Fusce vitae rutrum leo. Tellus lorem vitae tellus vitae lacus. Sed eiusmod tempor incididunt ut labore et dolore magna aliqua. Tellus lorem lorem ipsum dolor sit amet, consectetur elit adipiscing. Hendrerit dolor lorem ipsum dolor sit amet, consectetur elit adipiscing. Nulla fugiat nulla pariatur et eusmod sunt in dolore magna aliqua. Tellus lorem ipsum dolor sit amet, consectetur elit adipiscing.
-                    </p>
-                    <p>
-                      Lorem vitae tellus vitae lacus. Sed eiusmod tempor incididunt ut labore et dolore magna aliqua. Tellus lorem ipsum dolor sit amet, consectetur elit adipiscing. Hendrerit dolor lorem ipsum dolor sit amet, consectetur elit adipiscing.
-                    </p>
+                  <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                    {selectedRecording.summary || <span className="italic text-gray-400">No summary available.</span>}
                   </div>
                 </div>
               </div>

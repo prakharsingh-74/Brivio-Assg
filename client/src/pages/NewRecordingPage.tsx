@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { Spinner } from '../components/Spinner';
 import { FileDropzone } from '../components/Upload/FileDropzone';
 import { apiClient } from '../lib/api/client';
 import { useRecordings } from '../hooks/useRecordings';
@@ -25,6 +26,7 @@ export function NewRecordingPage() {
         userId: 'user1',
         title: file.name.replace('.mp3', ''),
         summary: 'Processing...',
+        transcription: '',
         durationSec: 0,
         createdAt: new Date().toISOString(),
         status: 'processing' as const
@@ -94,13 +96,11 @@ export function NewRecordingPage() {
       <div className="flex-1 bg-gray-50 flex items-center justify-center p-6">
         <div className="w-full max-w-2xl">
           {hasProcessingRecording && !isUploading ? (
-            <div className="text-center">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
-                <p className="text-yellow-800 font-medium mb-2">Processing in progress</p>
-                <p className="text-yellow-700 text-sm">
-                  Your last recording is processing. You'll have to wait to upload a new recording.
-                </p>
-              </div>
+            <div className="flex items-center justify-center h-full w-full">
+              <p className="text-center text-gray-700 text-lg">
+                Your last recording is processing. You'll have to wait<br />
+                to upload a new recording.
+              </p>
             </div>
           ) : (
             <>
@@ -117,8 +117,9 @@ export function NewRecordingPage() {
               )}
 
               {isUploading && (
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-                  <p className="text-sm text-blue-600">Uploading and processing your recording...</p>
+                <div className="flex flex-col items-center bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+                  <Spinner />
+                  <p className="text-sm text-blue-600 mt-2">Uploading and processing your recording...</p>
                 </div>
               )}
 

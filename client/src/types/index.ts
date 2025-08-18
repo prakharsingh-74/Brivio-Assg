@@ -5,6 +5,7 @@ export interface Recording {
   userId: string;
   title: string;
   summary: string;
+  transcription: string;
   durationSec: number;
   createdAt: string;
   status: RecordingStatus;

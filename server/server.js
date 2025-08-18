@@ -5,6 +5,7 @@ const path = require("path");
 const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
+const recordingRoutes = require('./routes/recordingRoutes');
 const { protect } = require("./middlewares/authMiddleware");
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //routes
 app.use('/api/auth', authRoutes);
+app.use('/api/recordings', recordingRoutes);
 
 //start server
 const PORT = process.env.PORT || 5000;

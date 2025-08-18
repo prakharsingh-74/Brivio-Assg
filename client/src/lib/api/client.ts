@@ -40,93 +40,79 @@ class ApiClient {
     return res.json();
   }
 
-  async getRecordings(limit = 20, cursor?: string): Promise<Paginated<Recording>> {
-    // Mock data with delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const mockRecordings: Recording[] = [
-      {
-        id: '1',
-        userId: 'user1',
-        title: 'A sad song',
-        summary: 'Fugiat ipsum consequat aliquam ultrices lacus. Tellus lorem ipsum dolor sit amet, consectetur elit.',
-        durationSec: 204, // 3:24
-        createdAt: '2025-08-01T10:30:00Z',
-        status: 'completed'
-      },
-      {
-        id: '2',
-        userId: 'user1',
-        title: 'My personal recording',
-        summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.',
-        durationSec: 204,
-        createdAt: '2025-07-31T14:20:00Z',
-        status: 'completed'
-      },
-      {
-        id: '3',
-        userId: 'user1',
-        title: 'Interview Recording',
-        summary: 'Ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.',
-        durationSec: 3624, // 01:00:24
-        createdAt: '2025-08-15T09:15:00Z',
-        status: 'completed'
-      },
-      {
-        id: '4',
-        userId: 'user1',
-        title: 'Untitled Recording',
-        summary: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque.',
-        durationSec: 24,
-        createdAt: '2025-07-25T16:45:00Z',
-        status: 'completed'
-      },
-      {
-        id: '5',
-        userId: 'user1',
-        title: 'Untitled Recording (1)',
-        summary: 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium.',
-        durationSec: 320, // 5:20
-        createdAt: '2025-07-27T11:30:00Z',
-        status: 'completed'
-      },
-    ];
-
-    // Simulate infinite scroll
-    const startIndex = cursor ? parseInt(cursor) : 0;
-    const endIndex = Math.min(startIndex + limit, mockRecordings.length);
-    const items = mockRecordings.slice(startIndex, endIndex);
-    const nextCursor = endIndex < mockRecordings.length ? endIndex.toString() : undefined;
-
-    return { items, nextCursor };
+  getAuthHeaders(): HeadersInit {
+    if (this.token) {
+      return { Authorization: `Bearer ${this.token}` };
+    }
+    return {};
   }
 
-  async uploadRecording(file: File): Promise<UploadResponse> {
-    // Mock upload with delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    
+  async getRecordings(limit = 20, cursor?: string): Promise<Paginated<Recording>> {
+    const params = new URLSearchParams();
+    params.append('limit', limit.toString());
+    if (cursor) params.append('cursor', cursor);
+    const res = await fetch(`${API_BASE_URL}/recordings?${params.toString()}`, {
+      headers: {
+        ...this.getAuthHeaders(),
+      },
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || 'Failed to fetch recordings');
+    }
+    const data = await res.json();
+    // Map backend _id to id for frontend
     return {
-      id: `recording-${Date.now()}`,
-      status: 'processing'
+      items: data.items.map((r: any) => ({
+        ...r,
+        id: r._id,
+      })),
+      nextCursor: data.nextCursor,
     };
   }
 
-  async getRecordingStatus(id: string): Promise<StatusResponse> {
-    // Mock status check with delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Simulate processing for 10 seconds, then completed
-    const uploadTime = parseInt(id.split('-')[1] || '0');
-    const elapsed = Date.now() - uploadTime;
-    
-    if (elapsed < 10000) {
-      return { status: 'processing' };
+  async uploadRecording(file: File): Promise<UploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE_URL}/recordings/upload`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        ...this.getAuthHeaders(),
+      },
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || 'Upload failed');
     }
-    
-    return { status: 'completed' };
+    return res.json();
+  }
+
+  async getRecordingStatus(id: string): Promise<StatusResponse> {
+    const res = await fetch(`${API_BASE_URL}/recordings/${id}/status`, {
+      headers: {
+        ...this.getAuthHeaders(),
+      },
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || 'Failed to get status');
+    }
+    return res.json();
+  }
+
+  async getRecordingDetails(id: string): Promise<Recording> {
+    const res = await fetch(`${API_BASE_URL}/recordings/${id}`, {
+      headers: {
+        ...this.getAuthHeaders(),
+      },
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || 'Failed to get recording details');
+    }
+    const r = await res.json();
+    return { ...r, id: r._id };
   }
 }
 
